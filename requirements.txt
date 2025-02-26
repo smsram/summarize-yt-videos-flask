@@ -1,0 +1,6 @@
+Flask
+google-generativeai
+SpeechRecognition
+pytube
+youtube-transcript-api
+Flask-Cors
