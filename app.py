@@ -77,10 +77,17 @@ def generate_subtitles(video_url):
 
 def summarize_text(text):
     """Summarizes subtitles using Gemini API."""
+    if not text or text.strip() == "":
+        return "No transcript available to summarize."
+
     model = genai.GenerativeModel("gemini-1.5-flash")
-    prompt = "Here is an extracted transcript of a video. Summarize it briefly under 400 lines you may respond with points :\n\n" + text
-    response = model.generate_content(prompt)
-    return response.text if response else "Failed to summarize."
+    prompt = f"Summarize this YouTube video transcript in short points:\n\n{text}"
+    
+    try:
+        response = model.generate_content(prompt)
+        return response.text if hasattr(response, "text") else "Gemini API failed to generate a summary."
+    except Exception as e:
+        return f"Error summarizing: {str(e)}"
 
 @app.route('/summarize', methods=['POST'])
 def summarize_video():
