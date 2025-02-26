@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
 # Configure Gemini API Key (Use environment variable in production)
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key="AIzaSyAFKX0_vAawMqcc8-B1Wbmq96xqPQ6p5xs")
 
 def extract_video_id(url):
     """Extracts YouTube video ID from a valid link."""
