@@ -3,7 +3,7 @@ import os
 import re
 import google.generativeai as genai
 import speech_recognition as sr
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+from youtube_transcript_api import YouTubeTranscriptApi
 from flask_cors import CORS
 import yt_dlp
 
@@ -50,13 +50,13 @@ def generate_subtitles(video_url):
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         subtitles = "\n".join([item["text"] for item in transcript])
         return subtitles
-    except (TranscriptsDisabled, NoTranscriptFound):
+    except:
         print("No subtitles found! Generating subtitles using SpeechRecognition...")
 
     # Step 2: Download audio & transcribe using Google Speech Recognition
     audio_path = download_audio(video_url)
     if not audio_path:
-        return "Failed to download audio. Ensure cookies.txt is present."
+        return "Failed to download audio."
 
     recognizer = sr.Recognizer()
     subtitles = ""
@@ -69,10 +69,10 @@ def generate_subtitles(video_url):
         subtitles = "Speech recognition failed: Could not understand audio."
     except sr.RequestError:
         subtitles = "Speech recognition failed: API request error."
-    finally:
-        # Cleanup: Delete audio file after processing
-        if os.path.exists(audio_path):
-            os.remove(audio_path)
+    
+    # Cleanup: Delete audio file after processing
+    if os.path.exists(audio_path):
+        os.remove(audio_path)
 
     return subtitles
 
