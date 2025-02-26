@@ -1,36 +1,39 @@
 from flask import Flask, request, jsonify
-import re
 import os
+import re
 import google.generativeai as genai
 import speech_recognition as sr
 from youtube_transcript_api import YouTubeTranscriptApi
 from flask_cors import CORS
-from pytube import YouTube
+import yt_dlp
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
-# Set Gemini API Key (Use environment variable in production)
+# Configure Gemini API Key (Use environment variable in production)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def extract_video_id(url):
-    """Extracts YouTube video ID from any valid link."""
+    """Extracts YouTube video ID from a valid link."""
     pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11}).*"
     match = re.search(pattern, url)
     return match.group(1) if match else None
 
 def download_audio(video_url):
-    """Downloads YouTube video audio as MP3 without FFmpeg."""
+    """Downloads YouTube video audio as MP3 using yt-dlp."""
     try:
-        yt = YouTube(video_url)
-        audio_stream = yt.streams.filter(only_audio=True).first()
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': 'temp_audio.mp3',
+            'quiet': True,
+            'noplaylist': True
+        }
         
-        # Download the audio file as MP3
-        audio_path = "temp_audio.mp3"
-        audio_stream.download(filename=audio_path)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([video_url])
 
-        return audio_path
+        return "temp_audio.mp3"
     except Exception as e:
         print(f"Error downloading audio: {e}")
         return None
