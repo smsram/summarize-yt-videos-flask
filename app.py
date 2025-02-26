@@ -3,7 +3,7 @@ import os
 import re
 import google.generativeai as genai
 import speech_recognition as sr
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from flask_cors import CORS
 import yt_dlp
 
@@ -21,13 +21,14 @@ def extract_video_id(url):
     return match.group(1) if match else None
 
 def download_audio(video_url):
-    """Downloads YouTube video audio as MP3 using yt-dlp."""
+    """Downloads YouTube video audio as MP3 using yt-dlp with authentication cookies."""
     try:
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': 'temp_audio.mp3',
             'quiet': True,
-            'noplaylist': True
+            'noplaylist': True,
+            'cookies': 'cookies.txt'  # Use authentication cookies
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -49,13 +50,13 @@ def generate_subtitles(video_url):
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         subtitles = "\n".join([item["text"] for item in transcript])
         return subtitles
-    except:
+    except (TranscriptsDisabled, NoTranscriptFound):
         print("No subtitles found! Generating subtitles using SpeechRecognition...")
 
     # Step 2: Download audio & transcribe using Google Speech Recognition
     audio_path = download_audio(video_url)
     if not audio_path:
-        return "Failed to download audio."
+        return "Failed to download audio. Ensure cookies.txt is present."
 
     recognizer = sr.Recognizer()
     subtitles = ""
