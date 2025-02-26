@@ -1,6 +1,7 @@
 Flask
 gunicorn
 pytube
+yt-dlp
 google-generativeai
 speechrecognition
 youtube-transcript-api
